@@ -11,12 +11,12 @@ import (
 func readInput(filename string) ([]string, error) {
 	path, err := filepath.Abs(filename)
 	if err != nil {
-		return nil, fmt.Errorf("error constructing absolute path from %s: %s", filename, err)
+		return nil, fmt.Errorf("constructing absolute path from %s: %s", filename, err)
 	}
 
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("error opening config file %s for reading: %s", path, err)
+		return nil, fmt.Errorf("opening config file %s for reading: %s", path, err)
 	}
 	defer f.Close()
 
@@ -27,7 +27,7 @@ func readInput(filename string) ([]string, error) {
 		boxIDs = append(boxIDs, scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading input file: %s", err)
+		return nil, fmt.Errorf("reading input file: %s", err)
 	}
 
 	return boxIDs, nil

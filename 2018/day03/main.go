@@ -35,7 +35,7 @@ var claimRegexp = regexp.MustCompile(`^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$`)
 func parseClaim(raw string) (Claim, error) {
 	matches := claimRegexp.FindStringSubmatch(raw)
 	if matches == nil {
-		return Claim{}, nil
+		return Claim{}, fmt.Errorf("claim string \"%s\" does not match pattern", raw)
 	}
 
 	id, _ := strconv.ParseUint(matches[1], 10, 64)
@@ -64,12 +64,12 @@ func NewFabric(dimension int) Fabric {
 func readInput(filename string) ([]Claim, error) {
 	path, err := filepath.Abs(filename)
 	if err != nil {
-		return nil, fmt.Errorf("error constructing absolute path from %s: %s", filename, err)
+		return nil, fmt.Errorf("constructing absolute path from %s: %s", filename, err)
 	}
 
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("error opening config file %s for reading: %s", path, err)
+		return nil, fmt.Errorf("opening config file %s for reading: %s", path, err)
 	}
 	defer f.Close()
 
@@ -85,7 +85,7 @@ func readInput(filename string) ([]Claim, error) {
 		claims = append(claims, claim)
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading input file: %s", err)
+		return nil, fmt.Errorf("reading input file: %s", err)
 	}
 
 	return claims, nil

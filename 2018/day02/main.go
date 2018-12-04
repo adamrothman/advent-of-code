@@ -40,7 +40,7 @@ func calculateChecksum(boxIDs []string) int64 {
 		counter := make(map[rune]int)
 
 		for _, char := range boxID {
-			counter[char] += 1
+			counter[char]++
 		}
 
 		hasDouble, hasTriple := false, false
@@ -58,10 +58,10 @@ func calculateChecksum(boxIDs []string) int64 {
 		}
 
 		if hasDouble {
-			doubles += 1
+			doubles++
 		}
 		if hasTriple {
-			triples += 1
+			triples++
 		}
 	}
 

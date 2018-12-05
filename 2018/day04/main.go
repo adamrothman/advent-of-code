@@ -90,100 +90,73 @@ func readInput(filename string) ([]LogLine, error) {
 	return lines, nil
 }
 
-func calculateSleepiestGuard(lines []LogLine) (sleepiestGuard uint64, totalSleep time.Duration) {
-	sleepCounter := make(map[uint64]time.Duration)
+type timesAsleepPerMinute map[int]uint
+type timesAsleepPerMinutePerGuard map[uint64]timesAsleepPerMinute
+
+func countTimesAsleepPerMinutePerGuard(lines []LogLine) timesAsleepPerMinutePerGuard {
+	timesAsleepByGuard := make(timesAsleepPerMinutePerGuard)
 
 	var currentGuard uint64
 	var fellAsleep time.Time
 	for _, line := range lines {
 		if line.Guard != 0 {
 			currentGuard = line.Guard
-		} else if line.FallsAsleep {
-			fellAsleep = line.Time
-		} else if line.WakesUp && !fellAsleep.IsZero() {
-			durationAsleep := line.Time.Sub(fellAsleep)
-			sleepCounter[currentGuard] += durationAsleep
-			fellAsleep = time.Time{}
-		}
-	}
-
-	for guard, durationAsleep := range sleepCounter {
-		if durationAsleep > totalSleep {
-			sleepiestGuard = guard
-			totalSleep = durationAsleep
-		}
-	}
-
-	return
-}
-
-func calculateSleepiestMinute(lines []LogLine, guard uint64) (sleepiestMinute int) {
-	minuteTracker := make(map[int]uint64)
-
-	var currentGuard uint64
-	var fellAsleep time.Time
-	for _, line := range lines {
-		if line.Guard != 0 {
-			currentGuard = line.Guard
-		} else if line.FallsAsleep {
-			fellAsleep = line.Time
-		} else if line.WakesUp && !fellAsleep.IsZero() {
-			if currentGuard == guard {
-				for minute := fellAsleep.Minute(); minute < line.Time.Minute(); minute++ {
-					minuteTracker[minute]++
-				}
-			}
-			fellAsleep = time.Time{}
-		}
-	}
-
-	var mostTimesAsleep uint64
-	for minute, timesAsleep := range minuteTracker {
-		if timesAsleep > mostTimesAsleep {
-			sleepiestMinute = minute
-			mostTimesAsleep = timesAsleep
-		}
-	}
-
-	return
-}
-
-func calculateMostFrequentlyAsleepOnSameMinute(lines []LogLine) (targetGuard uint64, targetMinute int, timesAsleep uint64) {
-	minuteTrackers := make(map[uint64]map[int]uint64)
-
-	var currentGuard uint64
-	var fellAsleep time.Time
-	for _, line := range lines {
-		if line.Guard != 0 {
-			currentGuard = line.Guard
-			if _, ok := minuteTrackers[currentGuard]; !ok {
-				minuteTrackers[currentGuard] = make(map[int]uint64)
+			if _, ok := timesAsleepByGuard[currentGuard]; !ok {
+				timesAsleepByGuard[currentGuard] = make(timesAsleepPerMinute)
 			}
 		} else if line.FallsAsleep {
 			fellAsleep = line.Time
 		} else if line.WakesUp && !fellAsleep.IsZero() {
-			tracker := minuteTrackers[currentGuard]
+			perMinute := timesAsleepByGuard[currentGuard]
 			for minute := fellAsleep.Minute(); minute < line.Time.Minute(); minute++ {
-				tracker[minute]++
+				perMinute[minute]++
 			}
 			fellAsleep = time.Time{}
 		}
 	}
 
-	for guard, tracker := range minuteTrackers {
-		var sleepiestMinute int
-		var mostTimesAsleep uint64
-		for minute, timesAsleepDuringMinute := range tracker {
-			if timesAsleepDuringMinute > mostTimesAsleep {
-				sleepiestMinute = minute
-				mostTimesAsleep = timesAsleepDuringMinute
+	return timesAsleepByGuard
+}
+
+func calculateSleepiestGuard(counts timesAsleepPerMinutePerGuard) (sleepiestGuard uint64, minutesAsleep uint, sleepiestMinute int) {
+	for guard, minuteCounts := range counts {
+		var guardSleepiestMinute int
+		var guardMinutesAsleep, guardMaxTimesAsleep uint
+
+		for minute, timesAsleepDuringMinute := range minuteCounts {
+			if timesAsleepDuringMinute > guardMaxTimesAsleep {
+				guardSleepiestMinute = minute
+				guardMaxTimesAsleep = timesAsleepDuringMinute
+			}
+			guardMinutesAsleep += timesAsleepDuringMinute
+		}
+
+		if guardMinutesAsleep > minutesAsleep {
+			sleepiestGuard = guard
+			minutesAsleep = guardMinutesAsleep
+			sleepiestMinute = guardSleepiestMinute
+		}
+	}
+
+	return
+}
+
+func calculateTargetGuardAndMinute(counts timesAsleepPerMinutePerGuard) (targetGuard uint64, targetMinute int, timesAsleep uint) {
+	for guard, minuteCounts := range counts {
+		var guardSleepiestMinute int
+		var guardMaxTimesAsleep uint
+
+		for minute, timesAsleepDuringMinute := range minuteCounts {
+			if timesAsleepDuringMinute > guardMaxTimesAsleep {
+				guardSleepiestMinute = minute
+				guardMaxTimesAsleep = timesAsleepDuringMinute
 			}
 		}
 
-		if mostTimesAsleep > timesAsleep {
+		if guardMaxTimesAsleep > timesAsleep {
 			targetGuard = guard
-			targetMinute = sleepiestMinute
-			timesAsleep = mostTimesAsleep
+			targetMinute = guardSleepiestMinute
+			timesAsleep = guardMaxTimesAsleep
 		}
 	}
 
@@ -202,12 +175,16 @@ func main() {
 		return lines[i].Time.Before(lines[j].Time)
 	})
 
-	sleepiestGuard, totalSleep := calculateSleepiestGuard(lines)
-	fmt.Printf("Sleepiest guard is %d with %v spent asleep\n", sleepiestGuard, totalSleep)
+	timesAsleepPerMinutePerGuard := countTimesAsleepPerMinutePerGuard(lines)
 
-	sleepiestMinute := calculateSleepiestMinute(lines, sleepiestGuard)
+	sleepiestGuard, minutesAsleep, sleepiestMinute := calculateSleepiestGuard(timesAsleepPerMinutePerGuard)
+	fmt.Printf("Sleepiest guard is %d with %d minutes spent asleep\n", sleepiestGuard, minutesAsleep)
 	fmt.Printf("Sleepiest minute for guard %d is %d\n", sleepiestGuard, sleepiestMinute)
+	product := sleepiestGuard * uint64(sleepiestMinute)
+	fmt.Printf("\t%d * %d = %d\n", sleepiestGuard, sleepiestMinute, product)
 
-	targetGuard, targetMinute, timesAsleep := calculateMostFrequentlyAsleepOnSameMinute(lines)
-	fmt.Printf("Guard %d spend minute %d asleep %d times\n", targetGuard, targetMinute, timesAsleep)
+	targetGuard, targetMinute, timesAsleep := calculateTargetGuardAndMinute(timesAsleepPerMinutePerGuard)
+	fmt.Printf("Guard %d spent minute %d asleep %d times\n", targetGuard, targetMinute, timesAsleep)
+	product = targetGuard * uint64(targetMinute)
+	fmt.Printf("\t%d * %d = %d\n", targetGuard, targetMinute, product)
 }

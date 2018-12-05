@@ -97,7 +97,7 @@ func main() {
 
 	boxIDs, err := readInput(filename)
 	if err != nil {
-		log.Printf("Error reading input values from %s: %s\n", filename, err)
+		log.Printf("Error reading input from %s: %s\n", filename, err)
 	}
 
 	checksum := calculateChecksum(boxIDs)

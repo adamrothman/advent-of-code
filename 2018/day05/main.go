@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func readInput(filename string) (string, error) {
@@ -36,24 +37,62 @@ func readInput(filename string) (string, error) {
 
 func react(polymer string) string {
 	for {
-		reacted := polymer
-		for i, j := 0, 1; j < len(polymer); i, j = i+1, j+1 {
-			one, two := int32(reacted[i]), int32(reacted[j])
-			if abs32(one-two) == 32 {
-				fmt.Printf("reaction between %c and %c\n", one, two)
+		var result strings.Builder
+
+		for i := 0; i < len(polymer); {
+			current := polymer[i]
+
+			if i+1 < len(polymer) {
+				next := polymer[i+1]
+				if areReactive(current, next) {
+					i += 2
+					continue
+				}
 			}
+
+			result.WriteByte(current)
+			i++
 		}
 
-		if reacted == polymer {
-			return reacted
+		newPolymer := result.String()
+		if newPolymer == polymer {
+			return polymer
 		}
-		polymer = reacted
+		polymer = newPolymer
 	}
 }
 
-func abs32(x int32) int32 {
-	y := x >> 31
+func areReactive(x, y byte) bool {
+	return abs16(int16(x)-int16(y)) == 32
+}
+
+func abs16(x int16) int16 {
+	y := x >> 15
 	return (x ^ y) - y
+}
+
+var letters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+
+func findShortestAfterSingleExcision(polymer string) (shortest string, removedUnits string) {
+	minLength := len(polymer)
+
+	for _, letter := range letters {
+		upper := strings.ToUpper(letter)
+
+		replacer := strings.NewReplacer(letter, "", upper, "")
+		excised := replacer.Replace(polymer)
+
+		result := react(excised)
+		resultLen := len(result)
+
+		if resultLen < minLength {
+			minLength = resultLen
+			shortest = result
+			removedUnits = letter + upper
+		}
+	}
+
+	return
 }
 
 func main() {
@@ -65,5 +104,8 @@ func main() {
 	}
 
 	result := react(polymer)
-	fmt.Println("Reaction result:", result)
+	fmt.Printf("Resulting polymer has %d units\n", len(result))
+
+	shortest, removedUnits := findShortestAfterSingleExcision(polymer)
+	fmt.Printf("Removing %s produced the shortest reacted polymer at %d units\n", removedUnits, len(shortest))
 }

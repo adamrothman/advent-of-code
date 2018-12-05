@@ -55,7 +55,7 @@ While this example listed the entries in chronological order, your entries are i
 
 What is the ID of the guard you chose multiplied by the minute you chose? (In the above example, the answer would be `10 * 24 = 240`.)
 
-# Part Two
+## Part Two
 
 Strategy 2: Of all guards, which guard is most frequently asleep on the same minute?
 

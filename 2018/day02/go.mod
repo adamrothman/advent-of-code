@@ -1,1 +1,1 @@
-module github.com/adamrothman/advent-of-code/day02
+module github.com/adamrothman/advent-of-code/2018/day02

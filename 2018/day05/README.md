@@ -2,9 +2,9 @@
 
 You've managed to sneak in to the prototype suit manufacturing lab. The Elves are making decent progress, but are still struggling with the suit's size reduction capabilities.
 
-While the very latest in 1518 alchemical technology might have solved their problem eventually, you can do better. You scan the chemical composition of the suit's material and discover that it is formed by extremely long polymers (one of which is available as your puzzle input).
+While the very latest in 1518 alchemical technology might have solved their problem eventually, you can do better. You scan the chemical composition of the suit's material and discover that it is formed by extremely long [polymers](https://en.wikipedia.org/wiki/Polymer) (one of which is available as your puzzle input).
 
-The polymer is formed by smaller units which, when triggered, react with each other such that two adjacent units of the same type and opposite polarity are destroyed. Units' types are represented by letters; units' polarity is represented by capitalization. For instance, r and R are units with the same type but opposite polarity, whereas r and s are entirely different types and do not react.
+The polymer is formed by smaller **units** which, when triggered, react with each other such that two adjacent units of the same type and opposite polarity are destroyed. Units' types are represented by letters; units' polarity is represented by capitalization. For instance, `r` and `R` are units with the same type but opposite polarity, whereas `r` and `s` are entirely different types and do not react.
 
 For example:
 
@@ -15,16 +15,16 @@ For example:
 
 Now, consider a larger example, `dabAcCaCBAcCcaDA`:
 
-```
-dabAcCaCBAcCcaDA  The first 'cC' is removed.
-dabAaCBAcCcaDA    This creates 'Aa', which is removed.
-dabCBAcCcaDA      Either 'cC' or 'Cc' are removed (the result is the same).
+<pre>
+dabA<strong>cC</strong>aCBAcCcaDA  The first 'cC' is removed.
+dab<strong>Aa</strong>CBAcCcaDA    This creates 'Aa', which is removed.
+dabCBA<strong>cCc</strong>aDA      Either 'cC' or 'Cc' are removed (the result is the same).
 dabCBAcaDA        No further actions can be taken.
-```
+</pre>
 
-After all possible reactions, the resulting polymer contains 10 units.
+After all possible reactions, the resulting polymer contains **10 units**.
 
-How many units remain after fully reacting the polymer you scanned? (Note: in this puzzle and others, the input is large; if you copy/paste your input, make sure you get the whole thing.)
+**How many units remain after fully reacting the polymer you scanned?** (Note: in this puzzle and others, the input is large; if you copy/paste your input, make sure you get the whole thing.)
 
 ## Part 2
 
@@ -39,6 +39,6 @@ For example, again using the polymer `dabAcCaCBAcCcaDA` from above:
 - Removing all `C`/`c` units produces `dabAaBAaDA`. Fully reacting this polymer produces `daDA`, which has length 4.
 - Removing all `D`/`d` units produces `abAcCaCBAcCcaA`. Fully reacting this polymer produces `abCBAc`, which has length 6.
 
-In this example, removing all `C`/`c` units was best, producing the answer 4.
+In this example, removing all `C`/`c` units was best, producing the answer **4**.
 
-What is the length of the shortest polymer you can produce by removing all units of exactly one type and fully reacting the result?
+**What is the length of the shortest polymer you can produce** by removing all units of exactly one type and fully reacting the result?

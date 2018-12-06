@@ -17,7 +17,7 @@ func readInput(filename string) ([]int64, error) {
 
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("opening config file %s for reading: %s", path, err)
+		return nil, fmt.Errorf("opening input file %s: %s", path, err)
 	}
 	defer f.Close()
 

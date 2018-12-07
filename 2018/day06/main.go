@@ -161,6 +161,44 @@ func findMostIsolatedPoint(points []Point) (Point, uint64) {
 	return mostIsolatedPoint, maxArea
 }
 
+func findSafestRegionArea(points []Point) (area uint64) {
+	seen := make(map[Point]bool)
+
+	queue := make([]Point, 0)
+	// Starting point doesn't matter, just pick the first of the ones provided
+	queue = append(queue, points[0])
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		if seen[current] {
+			continue
+		}
+		seen[current] = true
+
+		if totalManhattanDistance(current, points) < 10000 {
+			area++
+			queue = append(
+				queue,
+				Point{X: current.X + 1, Y: current.Y},
+				Point{X: current.X - 1, Y: current.Y},
+				Point{X: current.X, Y: current.Y + 1},
+				Point{X: current.X, Y: current.Y - 1},
+			)
+		}
+	}
+
+	return
+}
+
+func totalManhattanDistance(ref Point, points []Point) (distance int64) {
+	for _, p := range points {
+		distance += manhattanDistance(ref, p)
+	}
+	return
+}
+
 func main() {
 	filename := "input.txt"
 
@@ -171,4 +209,7 @@ func main() {
 
 	mostIsolatedPoint, area := findMostIsolatedPoint(points)
 	fmt.Printf("Most isolated point is %+v with area %d\n", mostIsolatedPoint, area)
+
+	area = findSafestRegionArea(points)
+	fmt.Printf("Area of region containing all locations with total distance < 10000: %d\n", area)
 }

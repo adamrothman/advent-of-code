@@ -32,14 +32,14 @@ C      -->D----->E
 
 Your first goal is to determine the order in which the steps should be completed. If more than one step is ready, choose the step which is first alphabetically. In this example, the steps would be completed as follows:
 
-- Only `C` is available, and so it is done first.
-- Next, both `A` and `F` are available. `A` is first alphabetically, so it is done next.
-- Then, even though `F` was available earlier, steps `B` and `D` are now also available, and `B` is the first alphabetically of the three.
-- After that, only `D` and `F` are available. `E` is not available because only some of its prerequisites are complete. Therefore, `D` is completed next.
-- `F` is the only choice, so it is done next.
-- Finally, `E` is completed.
+- Only <code><strong>C</strong></code> is available, and so it is done first.
+- Next, both `A` and `F` are available. <code><strong>A</strong></code> is first alphabetically, so it is done next.
+- Then, even though `F` was available earlier, steps `B` and `D` are now also available, and <code><strong>B</strong></code> is the first alphabetically of the three.
+- After that, only `D` and `F` are available. `E` is not available because only some of its prerequisites are complete. Therefore, <code><strong>D</strong></code> is completed next.
+- <code><strong>F</strong></code> is the only choice, so it is done next.
+- Finally, <code><strong>E</strong></code> is completed.
 
-So, in this example, the correct order is `CABDFE`.
+So, in this example, the correct order is <code><strong>CABDFE</strong></code>.
 
 **In what order should the steps in your instructions be completed?**
 

@@ -7,34 +7,10 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strconv"
 )
 
 type Point struct {
-	X int64
-	Y int64
-}
-
-var pointRegexp = regexp.MustCompile(`^(\d+), (\d+)$`)
-
-func parsePoint(raw string) (Point, error) {
-	matches := pointRegexp.FindStringSubmatch(raw)
-	if matches == nil {
-		return Point{}, fmt.Errorf("point string \"%s\" does not match pattern", raw)
-	}
-
-	x, err := strconv.ParseInt(matches[1], 10, 64)
-	if err != nil {
-		return Point{}, fmt.Errorf("parsing X coordinate: %s", err)
-	}
-
-	y, err := strconv.ParseInt(matches[2], 10, 64)
-	if err != nil {
-		return Point{}, fmt.Errorf("parsing Y coordinate: %s", err)
-	}
-
-	return Point{X: x, Y: y}, nil
+	X, Y int64
 }
 
 func readInput(filename string) ([]Point, error) {
@@ -49,16 +25,21 @@ func readInput(filename string) ([]Point, error) {
 	}
 	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
 	points := make([]Point, 0)
 
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		point, err := parsePoint(scanner.Text())
-		if err != nil {
-			log.Printf("Error parsing line: %s", err)
-			continue
+		var p Point
+		n, err := fmt.Sscanf(
+			scanner.Text(),
+			"%d, %d",
+			&p.X,
+			&p.Y,
+		)
+		if n != 2 || err != nil {
+			return nil, fmt.Errorf("parsing point: %s", err)
 		}
-		points = append(points, point)
+		points = append(points, p)
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("reading input file: %s", err)

@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
 )
@@ -26,14 +25,19 @@ func readInput(filename string) (DependencyGraph, error) {
 	}
 	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
 	dependencies := make(DependencyGraph)
 
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		dependency, step, err := parseLine(scanner.Text())
-		if err != nil {
-			log.Printf("Error parsing line: %s", err)
-			continue
+		var dependency, step string
+		n, err := fmt.Sscanf(
+			scanner.Text(),
+			"Step %s must be finished before step %s can begin.",
+			&dependency,
+			&step,
+		)
+		if n != 2 || err != nil {
+			return nil, fmt.Errorf("parsing line: %s", err)
 		}
 
 		if _, ok := dependencies[step]; !ok {
@@ -50,21 +54,6 @@ func readInput(filename string) (DependencyGraph, error) {
 	}
 
 	return dependencies, nil
-}
-
-var lineRegexp = regexp.MustCompile(`^Step ([A-Z]) must be finished before step ([A-Z]) can begin.$`)
-
-func parseLine(raw string) (dependency, step string, err error) {
-	matches := lineRegexp.FindStringSubmatch(raw)
-	if matches == nil {
-		err = fmt.Errorf("line did not match expected pattern")
-		return
-	}
-
-	dependency = matches[1]
-	step = matches[2]
-
-	return
 }
 
 func findBuildOrder(dependencies DependencyGraph) []string {

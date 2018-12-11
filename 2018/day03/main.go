@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strconv"
 )
 
 type Claim struct {
@@ -30,37 +28,6 @@ func (c Claim) Overlaps(other Claim) bool {
 	return true
 }
 
-var claimRegexp = regexp.MustCompile(`^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$`)
-
-func parseClaim(raw string) (Claim, error) {
-	matches := claimRegexp.FindStringSubmatch(raw)
-	if matches == nil {
-		return Claim{}, fmt.Errorf("claim string \"%s\" does not match pattern", raw)
-	}
-
-	id, _ := strconv.ParseUint(matches[1], 10, 64)
-
-	left, _ := strconv.ParseUint(matches[2], 10, 64)
-	top, _ := strconv.ParseUint(matches[3], 10, 64)
-
-	width, _ := strconv.ParseUint(matches[4], 10, 64)
-	height, _ := strconv.ParseUint(matches[5], 10, 64)
-
-	return Claim{ID: id, Left: left, Top: top, Width: width, Height: height}, nil
-}
-
-type Fabric [][]int
-
-const FabricDimension = 1000
-
-func NewFabric(dimension int) Fabric {
-	fabric := make(Fabric, dimension)
-	for i := 0; i < dimension; i++ {
-		fabric[i] = make([]int, dimension)
-	}
-	return fabric
-}
-
 func readInput(filename string) ([]Claim, error) {
 	path, err := filepath.Abs(filename)
 	if err != nil {
@@ -73,22 +40,42 @@ func readInput(filename string) ([]Claim, error) {
 	}
 	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
 	claims := make([]Claim, 0)
 
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		claim, err := parseClaim(scanner.Text())
-		if err != nil {
-			log.Printf("Error parsing claim: %s", err)
-			continue
+		var c Claim
+		n, err := fmt.Sscanf(
+			scanner.Text(),
+			"#%d @ %d,%d: %dx%d",
+			&c.ID,
+			&c.Left,
+			&c.Top,
+			&c.Width,
+			&c.Height,
+		)
+		if n != 5 || err != nil {
+			return nil, fmt.Errorf("parsing claim: %s", err)
 		}
-		claims = append(claims, claim)
+		claims = append(claims, c)
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("reading input file: %s", err)
 	}
 
 	return claims, nil
+}
+
+type Fabric [][]int
+
+const FabricDimension = 1000
+
+func NewFabric(dimension int) Fabric {
+	fabric := make(Fabric, dimension)
+	for i := 0; i < dimension; i++ {
+		fabric[i] = make([]int, dimension)
+	}
+	return fabric
 }
 
 func populateFabric(claims []Claim) Fabric {

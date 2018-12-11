@@ -30,7 +30,12 @@ func readInput(filename string) (Game, error) {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		n, err := fmt.Sscanf(scanner.Text(), "%d players; last marble is worth %d points", &playerCount, &lastMarbleValue)
+		n, err := fmt.Sscanf(
+			scanner.Text(),
+			"%d players; last marble is worth %d points",
+			&playerCount,
+			&lastMarbleValue,
+		)
 		if n != 2 || err != nil {
 			return Game{}, fmt.Errorf("parsing line: %s", err)
 		}

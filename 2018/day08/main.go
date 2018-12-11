@@ -86,7 +86,7 @@ func sumMetadata(root Node) (metadataSum uint64) {
 	return
 }
 
-func computeValue(node Node) (value uint64) {
+func calculateValue(node Node) (value uint64) {
 	if len(node.Children) == 0 {
 		for _, entry := range node.Metadata {
 			value += entry
@@ -105,7 +105,7 @@ func computeValue(node Node) (value uint64) {
 		}
 
 		child := node.Children[index]
-		value += computeValue(child)
+		value += calculateValue(child)
 	}
 
 	return
@@ -123,6 +123,6 @@ func main() {
 	sum := sumMetadata(tree)
 	fmt.Println("Sum of metadata entries:", sum)
 
-	value := computeValue(tree)
+	value := calculateValue(tree)
 	fmt.Println("Tree value:", value)
 }

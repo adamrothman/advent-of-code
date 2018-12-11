@@ -37,7 +37,7 @@ func readInput(filename string) (Game, error) {
 			&lastMarbleValue,
 		)
 		if n != 2 || err != nil {
-			return Game{}, fmt.Errorf("parsing line: %s", err)
+			return Game{}, fmt.Errorf("parsing game: %s", err)
 		}
 		break
 	}

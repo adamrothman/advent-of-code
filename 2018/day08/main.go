@@ -21,16 +21,14 @@ func readInput(filename string) ([]uint64, error) {
 	}
 	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanWords)
-
 	values := make([]uint64, 0)
 
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanWords)
 	for scanner.Scan() {
 		value, err := strconv.ParseUint(scanner.Text(), 10, 64)
 		if err != nil {
-			log.Printf("Error parsing uint64: %s", err)
-			continue
+			return nil, fmt.Errorf("parsing uint64: %s", err)
 		}
 		values = append(values, value)
 	}

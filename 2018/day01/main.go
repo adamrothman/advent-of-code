@@ -21,15 +21,13 @@ func readInput(filename string) ([]int64, error) {
 	}
 	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
 	changes := make([]int64, 0)
 
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		line := scanner.Text()
-		i, err := strconv.ParseInt(line, 10, 64)
+		i, err := strconv.ParseInt(scanner.Text(), 10, 64)
 		if err != nil {
-			log.Printf("Error parsing int64 from %s: %s", line, err)
-			continue
+			return nil, fmt.Errorf("parsing int64: %s", err)
 		}
 		changes = append(changes, i)
 	}

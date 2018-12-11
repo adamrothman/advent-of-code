@@ -44,7 +44,7 @@ func readInput(filename string) ([]Point, error) {
 			&p.Velocity.Y,
 		)
 		if n != 4 || err != nil {
-			return nil, fmt.Errorf("parsing line: %s", err)
+			return nil, fmt.Errorf("parsing point: %s", err)
 		}
 		points = append(points, p)
 	}

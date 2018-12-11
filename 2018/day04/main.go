@@ -72,14 +72,13 @@ func readInput(filename string) ([]LogLine, error) {
 	}
 	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
 	lines := make([]LogLine, 0)
 
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		line, err := parseLogLine(scanner.Text())
 		if err != nil {
-			log.Printf("Error parsing line: %s", err)
-			continue
+			return nil, fmt.Errorf("parsing line: %s", err)
 		}
 		lines = append(lines, line)
 	}

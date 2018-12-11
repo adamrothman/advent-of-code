@@ -20,9 +20,9 @@ func readInput(filename string) ([]string, error) {
 	}
 	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
 	boxIDs := make([]string, 0)
 
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		boxIDs = append(boxIDs, scanner.Text())
 	}

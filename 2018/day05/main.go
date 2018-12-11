@@ -21,9 +21,9 @@ func readInput(filename string) (string, error) {
 	}
 	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
 	var text string
 
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		text = scanner.Text()
 		break

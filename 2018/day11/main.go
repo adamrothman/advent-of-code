@@ -9,52 +9,53 @@ type Cell struct {
 	X, Y int64
 }
 
-func calculatePower(cell Cell, serial int64) (power int64) {
-	rackID := cell.X + 10
-	power = rackID * cell.Y
-	power += serial
+type PowerGrid struct {
+	Width, Height int64
+	Serial        int64
+
+	summedPowerTable map[Cell]int64
+}
+
+func NewPowerGrid(width, height, serial int64) PowerGrid {
+	grid := PowerGrid{
+		Width:  width,
+		Height: height,
+		Serial: serial,
+	}
+
+	// https://en.wikipedia.org/wiki/Summed-area_table
+	spt := make(map[Cell]int64)
+	for x := int64(1); x <= width; x++ {
+		for y := int64(1); y <= height; y++ {
+			power := grid.CalculatePowerAt(x, y)
+			spt[Cell{X: x, Y: y}] = power + spt[Cell{X: x, Y: y - 1}] + spt[Cell{X: x - 1, Y: y}] - spt[Cell{X: x - 1, Y: y - 1}]
+		}
+	}
+	grid.summedPowerTable = spt
+
+	return grid
+}
+
+func (g PowerGrid) CalculatePowerAt(x, y int64) (power int64) {
+	rackID := x + 10
+	power = rackID * y
+	power += g.Serial
 	power *= rackID
 	power = (power / 100) % 10 // hundreds digit
 	power -= 5
 	return
 }
 
-type PowerGrid struct {
-	Width, Height int64
-	Serial        int64
-
-	cellPowers map[Cell]int64
-}
-
-func NewPowerGrid(width, height, serial int64) PowerGrid {
-	grid := PowerGrid{
-		Width:      width,
-		Height:     height,
-		Serial:     serial,
-		cellPowers: make(map[Cell]int64),
-	}
-
-	for x := int64(1); x <= width; x++ {
-		for y := int64(1); y <= height; y++ {
-			c := Cell{X: x, Y: y}
-			grid.cellPowers[c] = calculatePower(c, serial)
-		}
-	}
-
-	return grid
-}
-
-func (g PowerGrid) GetPowerAt(x, y int64) int64 {
-	return g.cellPowers[Cell{X: x, Y: y}]
-}
-
-func (g PowerGrid) GetPowerWithin(topLeft, bottomRight Cell) (power int64) {
-	for x := topLeft.X; x <= bottomRight.X; x++ {
-		for y := topLeft.Y; y <= bottomRight.Y; y++ {
-			power += g.GetPowerAt(x, y)
-		}
-	}
-	return
+// https://en.wikipedia.org/wiki/Summed-area_table#The_algorithm
+// Note that our A here is actually 1 unit to the left and above the given
+// topLeft; this is because the canonical formula excludes the top and left
+// sides (which we want to include).
+func (g PowerGrid) GetPowerWithin(topLeft, bottomRight Cell) int64 {
+	a := Cell{X: topLeft.X - 1, Y: topLeft.Y - 1}
+	b := Cell{X: bottomRight.X, Y: a.Y}
+	c := Cell{X: a.X, Y: bottomRight.Y}
+	d := Cell{X: bottomRight.X, Y: bottomRight.Y}
+	return g.summedPowerTable[d] + g.summedPowerTable[a] - g.summedPowerTable[b] - g.summedPowerTable[c]
 }
 
 func findLargestTotalPower(grid PowerGrid, width, height int64) (topLeft Cell, totalPower int64) {
@@ -74,46 +75,15 @@ func findLargestTotalPower(grid PowerGrid, width, height int64) (topLeft Cell, t
 	return
 }
 
-// https://en.wikipedia.org/wiki/Summed-area_table
-type SummedPowerTable struct {
-	table map[Cell]int64
-}
-
-func NewSummedPowerTable(grid PowerGrid) SummedPowerTable {
-	table := make(map[Cell]int64)
-
-	for x := int64(1); x <= grid.Width; x++ {
-		for y := int64(1); y <= grid.Height; y++ {
-			table[Cell{X: x, Y: y}] = grid.GetPowerAt(x, y) + table[Cell{X: x, Y: y - 1}] + table[Cell{X: x - 1, Y: y}] - table[Cell{X: x - 1, Y: y - 1}]
-		}
-	}
-
-	return SummedPowerTable{table: table}
-}
-
-// https://en.wikipedia.org/wiki/Summed-area_table#The_algorithm
-// Note that our A here is actually 1 unit to the left and above the given
-// topLeft; this is because the canonical formula excludes the top and left
-// sides (which we want to include).
-func (spt SummedPowerTable) GetPowerWithin(topLeft, bottomRight Cell) int64 {
-	a := Cell{X: topLeft.X - 1, Y: topLeft.Y - 1}
-	b := Cell{X: bottomRight.X, Y: a.Y}
-	c := Cell{X: a.X, Y: bottomRight.Y}
-	d := Cell{X: bottomRight.X, Y: bottomRight.Y}
-	return spt.table[d] + spt.table[a] - spt.table[b] - spt.table[c]
-}
-
 func findOverallLargestTotalPower(grid PowerGrid) (topLeft Cell, bestSize, totalPower int64) {
 	totalPower = math.MinInt64
-
-	spt := NewSummedPowerTable(grid)
 
 	for size := int64(1); size < grid.Width; size++ {
 		for x := int64(1); x+size <= grid.Width; x++ {
 			for y := int64(1); y+size <= grid.Height; y++ {
 				tL := Cell{X: x, Y: y}
 				bR := Cell{X: x + size - 1, Y: y + size - 1}
-				if power := spt.GetPowerWithin(tL, bR); power > totalPower {
+				if power := grid.GetPowerWithin(tL, bR); power > totalPower {
 					topLeft = tL
 					bestSize = size
 					totalPower = power

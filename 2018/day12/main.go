@@ -197,6 +197,39 @@ func simulateGeneration(g Generation, rules []Rule) Generation {
 	return expand(next)
 }
 
+func getSumAfter(initial Generation, rules []Rule, generations int) int {
+	result := expand(initial)
+
+	var lastEvaluatedGen, lastSum, lastDelta int
+
+	for gen := 0; gen < generations; gen++ {
+		result = simulateGeneration(result, rules)
+		lastEvaluatedGen = gen
+
+		sum := result.Sum()
+		delta := sum - lastSum
+		lastSum = sum
+
+		if delta != lastDelta {
+			lastDelta = delta
+			continue
+		}
+
+		break
+	}
+
+	// If we got all the way to the end, just return the result we computed.
+	if lastEvaluatedGen == generations-1 {
+		return lastSum
+	}
+
+	// Otherwise, we bailed early because the delta between generations
+	// stabilized. We can skip simulating the remaining generations and
+	// just do the math.
+	remainingGens := generations - lastEvaluatedGen - 1
+	return lastSum + remainingGens*lastDelta
+}
+
 func main() {
 	filename := "input.txt"
 
@@ -207,4 +240,7 @@ func main() {
 
 	twentyGens := simulateGrowth(initial, rules, 20)
 	fmt.Printf("Sum of numbers of all pots with plants after 20 generations: %d\n", twentyGens.Sum())
+
+	fiftyBillionSum := getSumAfter(initial, rules, 50000000000)
+	fmt.Printf("Sum of numbers of all pots with plants after 50,000,000,000 generations: %d\n", fiftyBillionSum)
 }

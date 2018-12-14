@@ -23,11 +23,11 @@ type LogLine struct {
 
 const timeLayout = "2006-01-02 15:04"
 
-var logLineRE = regexp.MustCompile(`^\[(\d{4}\-\d{2}\-\d{2} \d{2}:\d{2})\] ([\w #]+)$`)
-var guardRE = regexp.MustCompile(`^Guard #(\d+) begins shift$`)
+var logLineRegexp = regexp.MustCompile(`^\[(\d{4}\-\d{2}\-\d{2} \d{2}:\d{2})\] ([\w #]+)$`)
+var guardRegexp = regexp.MustCompile(`^Guard #(\d+) begins shift$`)
 
 func parseLogLine(raw string) (LogLine, error) {
-	matches := logLineRE.FindStringSubmatch(raw)
+	matches := logLineRegexp.FindStringSubmatch(raw)
 	if matches == nil {
 		return LogLine{}, fmt.Errorf("log line string \"%s\" does not match pattern", raw)
 	}
@@ -44,7 +44,7 @@ func parseLogLine(raw string) (LogLine, error) {
 	} else if line.Message == "wakes up" {
 		line.WakesUp = true
 	} else {
-		matches = guardRE.FindStringSubmatch(line.Message)
+		matches = guardRegexp.FindStringSubmatch(line.Message)
 		if matches == nil {
 			return LogLine{}, fmt.Errorf("guard change string \"%s\" does not match pattern", line.Message)
 		}

@@ -65,7 +65,7 @@ func main() {
 
 	changes, err := readInput(filename)
 	if err != nil {
-		log.Printf("Error reading input from %s: %s\n", filename, err)
+		log.Fatalf("Error reading input from %s: %s\n", filename, err)
 	}
 
 	frequency := calculateFrequency(changes)

@@ -235,7 +235,7 @@ func main() {
 
 	initial, rules, err := readInput(filename)
 	if err != nil {
-		log.Printf("Error reading input from %s: %s\n", filename, err)
+		log.Fatalf("Error reading input from %s: %s\n", filename, err)
 	}
 
 	twentyGens := simulateGrowth(initial, rules, 20)
